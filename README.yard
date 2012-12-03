@@ -1,0 +1,107 @@
+= Localeapp::HanldebarsI18n
+
+Localeapp::HandlebarsI18n is a set of tools for parsing hanldebars
+templates for a specific helper to collect missing i18n keys and report
+them to the Localeapp service.
+
+= Usage
+
+I usually set this up as a rake task so that I can push up missing
+tranlstions, push any new translations in the default locale yml file
+and finally pull down any new localizations from Localeapp.
+
+Here is an overly verbose example of a rake task that does just that!
+
+  !!!ruby
+  namespace :localeapp do
+    desc "push missing handlebars keys up to localeapp and update locale yml from localeapp"
+    task :update do
+      require 'localeapp-handlebars_i18n'
+      Localeapp::HandlebarsI18n.configure do |config|
+        config.hbs_load_path = Dir[File.expand_path '../assets/scripts/app/templates/**/*.hbs', __FILE__]
+        config.yml_load_path = File.expand_path '../locales/', __FILE__
+        config.localeapp_api_key = ENV['LOCALEAPP_API_KEY']
+        config.default_locale = :en
+        config.hbs_helper = 't'
+      end
+      Localeapp::HandlebarsI18n.send_missing_translations
+      system "localeapp push locales/#{Localeapp::HandlebarsI18n.default_locale}.yml"
+      system "localeapp pull"
+    end
+  end
+
+= The details
+
+This gem requires that you have a good understanding of how to get up
+and running with Localeapp. For it to be truly useful, you will also
+either be building a Rails application that compiles i18n localizaion
+information for use by I18n-js or Emberjs.STRINGS. To raise that barrier
+to entry just a little bit higher, you will be using handlebars for your
+view templates and have a localization helper setup in handlebars that
+lets you do stuff like !{{t some.string}} in your template to push out a
+localized string.
+
+If you are looking for a good example of all of this, have a look at
+travis-web!
+
+If all of that makes sense to you, here is an explanation of the
+configuration options that you will need to set up to push out missing
+tranlsations to Localeapp.
+
+ 
+=== hbs_load_path
+This is the path to all of your handlebars templates. All of the files
+listed here will be scanned for a handlebars set using the helper you
+specify in the following option.
+
+=== hbs_helper
+By default, this is going to look for !{{t some.key}} - or more
+specifically /!{{t (.*?)}}/ capturing what should be your tranlsation
+keys and comparing them to the data found in the following option.
+
+=== yml_load_path
+This is where your locale files live. The default locale is :en when
+looking up handlebars localizations but you can override this with the
+following configuration
+
+=== default_locale
+This is a symbol that defines the default locale you are working
+against. Most folks are using :en as the defualt locale, so that is what
+this gem uses. You can set it to any locale symbol you like but you need
+to be sure the file [default_locale].yml exists in the directory you
+specified for yml_load_path.
+
+=== localeapp_api_key
+This is your secret api key for using locale app. I usually export it
+to an shell variable, but how you manage it is up to you. Just dont post
+it to your public repo or anyone in the world will be able to update all
+your tranlsations to their favorite four letter word.
+
+
+= Coverage
+As always, this gem has 100% test coverage and 100% documentation
+
+
+= License
+Copyright (c) 2012 Randy Morgan
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

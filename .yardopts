@@ -1,0 +1,3 @@
+--readme README.yard
+--no-private
+--exclude README.markdown
