@@ -14,5 +14,5 @@ task :build do
 end
 desc "build and release the gem"
 task :release => :build do
-  system "gem push localeapp-handlebars_i18-#{Localeapp::HandlebarsI18n::VERSION}.gem"
+  system "gem push localeapp-handlebars_i18n-#{Localeapp::HandlebarsI18n::VERSION}.gem"
 end
